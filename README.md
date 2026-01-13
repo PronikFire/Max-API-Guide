@@ -1,3 +1,5 @@
+# *Пример можете посмотреть [здесь](https://github.com/PronikFire/Client-Max-Api).*
+
 # Гайд на API MAX
 
 ## Общая информация
