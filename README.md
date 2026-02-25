@@ -158,50 +158,166 @@ Payload кодируется в формате **MsgPack**.
 
 ## Список `opcode`
 
-> `(w)` - предположение на основе web-версии
+> [!IMPORTANT]
+> Большая часть была собраны из Android приложения, версии 25.21.3. Версия протокола: 11.
 
-| Opcode | Описание                                                |
-| ------ | ------------------------------------------------------- |
-| 1      | Interactive? Наверное, что-то вроде пинга.              |
-| 5      | События - действия клиента (w)                          |
-| 6      | Информация о клиенте                                    |
-| 11     | Отправка номера телефона (аутентификация)               |
-| 12     | Проверка кода из SMS                                    |
-| 16     | Задать профиль (w)                                      |
-| 19     | Вход по токену                                          |
-| 22     | Задать настройку (w)                                    |
-| 25     | Получить аватарки (w)                                   |
-| 26     | Секции по ID (w)                                        |
-| 27     | Эмодзи (w)                                              |
-| 28     | Эмодзи по ID (w)                                        |
-| 32     | Контакт по ID (w)                                       |
-| 35     | Последнее время онлайн контакта по ID (w)               |
-| 36     | Список заблокированных контактов (w)                    |
-| 48     | Информация о чате по ID (w)                             |
-| 49     | История чата по ID (w)                                  |
-| 50     | Действие с каналом (например, отметить прочитанным) (w) |
-| 64     | Отправить сообщения (w)                                 |
-| 73     | Поиск по чату (w)                                       |
-| 75     | Подписка на чат (клиент просматривает чат) (w)          |
-| 76     | Создать групповой звонок (w)                            |
-| 79     | Истории (w)                                             |
-| 83     | Получить видео по ID (w)                                |
-| 89     | Информация о ссылке (w)                                 |
-| 96     | Сессии клиента (входы, устройства и т.п.) (w)           |
-| 128    | Получение сообщения (от сервера) (w)                    |
-| 130    | Событие, связанное с чатом (от сервера) (w)             |
-| 160    | Получить мини-приложение (w)                            |
-| 177    | ??? (w)                                                 |
-| 178    | Добавить реакцию на сообщение (w)                       |
-| 180    | Реакции на сообщениях (w)                               |
-| 272    | Папки (w)                                               |
-| 274    | Добавить папку (w)                                      |
-| 275    | Задать порядок папок (w)                                |
-| 276    | Удалить папку (w)                                       |
+| Opcode | Описание |
+| - | - |
+| 1 | PING |
+| 2 | DEBUG |
+| 3 | RECONNECT |
+| 5 | LOG |
+| 5 | События - действия клиента (w) |
+| 6 | SESSION_INIT |
+| 11 | Отправка номера телефона (аутентификация) |
+| 12 | Проверка кода из SMS |
+| 16 | PROFILE |
+| 17 | AUTH_REQUEST |
+| 18 | AUTH |
+| 19 | LOGIN |
+| 20 | LOGOUT |
+| 21 | SYNC |
+| 22 | CONFIG |
+| 23 | AUTH_CONFIRM |
+| 25 | PRESET_AVATARS |
+| 26 | ASSETS_GET |
+| 27 | ASSETS_UPDATE |
+| 28 | ASSETS_GET_BY_IDS |
+| 29 | ASSETS_ADD |
+| 31 | SEARCH_FEEDBACK |
+| 32 | CONTACT_INFO |
+| 33 | CONTACT_ADD |
+| 34 | CONTACT_UPDATE |
+| 35 | CONTACT_PRESENCE |
+| 36 | CONTACT_LIST |
+| 37 | CONTACT_SEARCH |
+| 38 | CONTACT_MUTUAL |
+| 39 | CONTACT_PHOTOS |
+| 30 | CONTACT_SORT |
+| 42 | CONTACT_VERIFY |
+| 43 | REMOVE_CONTACT_PHOTO |
+| 46 | CONTACT_INFO_BY_PHONE |
+| 48 | CHAT_INFO |
+| 49 | CHAT_HISTORY |
+| 50 | CHAT_MARK |
+| 51 | CHAT_MEDIA |
+| 52 | CHAT_DELETE |
+| 53 | CHATS_LIST |
+| 54 | CHAT_CLEAR |
+| 55 | CHAT_UPDATE |
+| 56 | CHAT_CHECK_LINK |
+| 57 | CHAT_JOIN |
+| 58 | CHAT_LEAVE |
+| 59 | CHAT_MEMBERS |
+| 60 | PUBLIC_SEARCH |
+| 61 | CHAT_PERSONAL_CONFIG |
+| 63 | CHAT_CREATE |
+| 64 | MSG_SEND |
+| 65 | MSG_TYPING |
+| 66 | MSG_DELETE |
+| 67 | MSG_EDIT |
+| 68 | CHAT_SEARCH |
+| 70 | MSG_SHARE_PREVIEW |
+| 71 | MSG_GET |
+| 72 | MSG_SEARCH_TOUCH |
+| 73 | MSG_SEARCH |
+| 74 | MSG_GET_STAT |
+| 75 | CHAT_SUBSCRIBE |
+| 76 | VIDEO_CHAT_START |
+| 77 | CHAT_MEMBERS_UPDATE |
+| 78 | VIDEO_CHAT_START_ACTIVE |
+| 79 | VIDEO_CHAT_HISTORY |
+| 80 | PHOTO_UPLOAD |
+| 81 | STICKER_UPLOAD |
+| 82 | VIDEO_UPLOAD |
+| 83 | VIDEO_PLAY |
+| 84 | VIDEO_CHAT_CREATE_JOIN_LINK |
+| 86 | CHAT_PIN_SET_VISIBILITY |
+| 87 | FILE_UPLOAD |
+| 88 | FILE_DOWNLOAD |
+| 89 | LINK_INFO |
+| 92 | MSG_DELETE_RANGE |
+| 96 | SESSIONS_INFO |
+| 97 | SESSIONS_CLOSE |
+| 98 | PHONE_BIND_REQUEST |
+| 99 | PHONE_BIND_CONFIRM |
+| 103 | GET_INBOUND_CALLS |
+| 104 | AUTH_2FA_DETAILS |
+| 105 | EXTERNAL_CALLBACK |
+| 107 | AUTH_VALIDATE_PASSWORD |
+| 108 | AUTH_VALIDATE_HINT |
+| 109 | AUTH_VERIFY_EMAIL |
+| 110 | AUTH_CHECK_EMAIL |
+| 111 | AUTH_SET_2FA |
+| 112 | AUTH_CREATE_TRACK |
+| 113 | AUTH_CHECK_PASSWORD |
+| 115 | AUTH_LOGIN_CHECK_PASSWORD |
+| 116 | AUTH_LOGIN_PROFILE_DELETE |
+| 101 | AUTH_LOGIN_RESTORE_PASSWORD |
+| 117 | CHAT_COMPLAIN |
+| 118 | MSG_SEND_CALLBACK |
+| 119 | SUSPEND_BOT |
+| 124 | LOCATION_STOP |
+| 125 | LOCATION_SEND |
+| 126 | LOCATION_REQUEST |
+| 127 | GET_LAST_MENTIONS |
+| 128 | NOTIF_MESSAGE |
+| 129 | NOTIF_TYPING |
+| 130 | NOTIF_MARK |
+| 131 | NOTIF_CONTACT |
+| 132 | NOTIF_PRESENCE |
+| 134 | NOTIF_CONFIG |
+| 135 | NOTIF_CHAT |
+| 136 | NOTIF_ATTACH |
+| 137 | NOTIF_CALL_START |
+| 139 | NOTIF_CONTACT_SORT |
+| 140 | NOTIF_MSG_DELETE_RANGE |
+| 142 | NOTIF_MSG_DELETE |
+| 143 | NOTIF_CALLBACK_ANSWER |
+| 144 | CHAT_BOT_COMMANDS |
+| 145 | BOT_INFO |
+| 147 | NOTIF_LOCATION |
+| 148 | NOTIF_LOCATION_REQUEST |
+| 150 | NOTIF_ASSETS_UPDATE |
+| 152 | NOTIF_DRAFT |
+| 153 | NOTIF_DRAFT_DISCARD |
+| 154 | NOTIF_MSG_DELAYED |
+| 155 | NOTIF_MSG_REACTIONS_CHANGED |
+| 156 | NOTIF_MSG_YOU_REACTED |
+| 158 | OK_TOKEN |
+| 159 | NOTIF_PROFILE |
+| 160 | WEB_APP_INIT_DATA |
+| 161 | COMPLAIN |
+| 162 | COMPLAIN_REASONS_GET |
+| 176 | DRAFT_SAVE |
+| 177 | DRAFT_DISCARD |
+| 178 | MSG_REACTION |
+| 179 | MSG_CANCEL_REACTION |
+| 180 | MSG_GET_REACTIONS |
+| 181 | MSG_GET_DETAILED_REACTIONS |
+| 193 | STICKER_CREATE |
+| 194 | STICKER_SUGGEST |
+| 195 | VIDEO_CHAT_MEMBERS |
+| 196 | CHAT_HIDE |
+| 198 | CHAT_SEARCH_COMMON_PARTICIPANTS |
+| 199 | PROFILE_DELETE |
+| 200 | PROFILE_DELETE_TIME |
+| 257 | CHAT_REACTIONS_SETTINGS_SET |
+| 258 | REACTIONS_SETTINGS_GET_BY_CHAT_ID |
+| 259 | ASSETS_REMOVE |
+| 260 | ASSETS_MOVE |
+| 261 | ASSETS_LIST_MODIFY |
+| 272 | FOLDERS_GET |
+| 273 | FOLDERS_GET_BY_ID |
+| 274 | FOLDERS_UPDATE |
+| 275 | FOLDERS_REORDER |
+| 276 | FOLDERS_DELETE |
+| 277 | NOTIF_FOLDERS |
 | 288    | Запрос QR-кода для входа (w)                            |
 | 289    | Статус QR-кода по trackId (w)                           |
+| 290 | AUTH_QR_APPROVE |
 | 291    | Вход по trackId после сканирования QR-кода (w)          |
-| 292    | Запрос от сервера: показать баннер                      |
+| 292 | NOTIF_BANNERS |
 
 ---
 
