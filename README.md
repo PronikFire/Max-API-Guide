@@ -102,11 +102,11 @@
 | --- | --- |
 | 1 | `ver` - версия протокола |
 | 2 | `cmd` - команда (см. [значения cmd](#значения-cmd)) |
-| 3..4 | `seq` - порядковый номер операции |
+| 3..4 | `seq` - порядковый номер операции. |
 | 5..6 | `opcode` - код операции (см. [список opcode](#список-opcode)) |
 | 7 | `cof` - степень сжатия LZ4 (`0` - сжатие не используется) |
 | 8..10 | Длина payload в байтах |
-| 11.. | `Payload` - содержание пакета (кодируется в формате **MsgPack**) |
+| 11.. | `Payload` - содержание сообщения (кодируется в формате **MsgPack**) |
 
 ### Советы по анализу сообщений
 
@@ -123,10 +123,9 @@
 
 | Значение | Описание |
 | --- | --- |
-| 0 | Запрос |
-| 1 | Ответ |
-| 2 | ??? (точная роль не определена) |
-| 3 | Ошибка |
+| 0 | Request - запрос |
+| 1 | Response - ответ |
+| 3 | Error - ошибка |
 
 ---
 
@@ -143,37 +142,37 @@
 
 ## Список `opcode`
 
+Здесь собраны все возможные opcode. 
+
 > [!IMPORTANT]
 > База была собрана из Android-приложения версии `26.19.2`. Версия протокола: `10`.
-> Знак `~` означает, что opcode не подтвержден исходниками выбранной версии приложения.
 
 | Opcode | Описание |
 | --- | --- |
-| 1 | PING |
-| 2 | DEBUG |
-| 3 | RECONNECT |
-| 5 | LOG |
-| 6 | SESSION_INIT |
-| 8 | LOGIN2 |
-| 16 | PROFILE |
-| 17 | AUTH_REQUEST |
-| 18 | AUTH |
-| 19 | LOGIN |
-| 20 | LOGOUT |
-| 21 | SYNC |
-| 22 | CONFIG |
-| 23 | AUTH_CONFIRM |
-| 25 | PRESET_AVATARS |
-| 26 | ASSETS_GET |
-| 27 | ASSETS_UPDATE |
-| 28 | ASSETS_GET_BY_IDS |
-| 29 | ASSETS_ADD |
-| 31 | SEARCH_FEEDBACK ~ |
-| 32 | CONTACT_INFO |
+| 1 | [PING](#ping) |
+| 2 | [DEBUG](#debug) |
+| 3 | [RECONNECT](#reconnect) |
+| 5 | [LOG](#log) |
+| 6 | [SESSION_INIT](#session_init) |
+| 8 | [LOGIN2](#login2) |
+| 16 | [PROFILE](#profile) |
+| 17 | [AUTH_REQUEST](#auth_request) |
+| 18 | [AUTH](#auth) |
+| 19 | [LOGIN](#login) |
+| 20 | [LOGOUT](#logout) |
+| 21 | [SYNC](#sync) |
+| 22 | [CONFIG](#config) |
+| 23 | [AUTH_CONFIRM](#auth_confirm) |
+| 25 | [PRESET_AVATARS](#preset_avatars) |
+| 26 | [ASSETS_GET](#assets_get) |
+| 27 | [ASSETS_UPDATE](#assets_update) |
+| 28 | [ASSETS_GET_BY_IDS](#assets_get_by_ids) |
+| 29 | [ASSETS_ADD](#assets_add) |
+| 32 | [CONTACT_INFO](#contact_info) |
 | 33 | CONTACT_ADD |
-| 34 | CONTACT_UPDATE |
-| 35 | CONTACT_PRESENCE |
-| 36 | CONTACT_LIST |
+| 34 | [CONTACT_UPDATE](#contact_update) |
+| 35 | [CONTACT_PRESENCE](#contact_presence) |
+| 36 | [CONTACT_LIST](#contact_list) |
 | 37 | CONTACT_SEARCH |
 | 38 | CONTACT_MUTUAL |
 | 39 | CONTACT_PHOTOS |
@@ -317,13 +316,469 @@
 | 275 | FOLDERS_REORDER |
 | 276 | FOLDERS_DELETE |
 | 277 | NOTIF_FOLDERS |
-| 288 | Запрос QR-кода для входа ~ |
-| 289 | Статус QR-кода по trackId ~ |
 | 290 | AUTH_QR_APPROVE |
-| 291 | Вход по trackId после сканирования QR-кода ~ |
 | 292 | NOTIF_BANNERS |
 | 293 | NOTIF_TRANSCRIPTION |
 | 300 | CHAT_SUGGEST |
 | 301 | AUDIO_PLAY |
 | 304 | SEND_VOTE |
 | 306 | GET_POLL_UPDATES |
+
+---
+
+## Структуры сообщений
+
+Здесь описаны структуры сообщений запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем что будут в сообщениях, т.е. их можно использовать для парсинга.
+
+> [!IMPORTANT]
+> `Optional` не значит что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.
+
+### PING
+```
+Request
+{
+	bool interactive
+}
+```
+```
+Response { }
+```
+
+### DEBUG
+```
+Request
+{
+	[EnumAsString]
+	CmdType cmd
+	string[] args
+}
+```
+```
+Response { }
+```
+
+### RECONNECT
+```
+Request
+{
+	bool tls
+	string redirectHost
+}
+```
+```
+Response { }
+```
+
+### LOG
+```
+Request
+{
+	ApiLogEntry[] events
+}
+```
+```
+Response { }
+```
+
+### SESSION_INIT
+```
+Request 
+{
+	UserAgent userAgent
+	string deviceId
+	long clientSessionId
+	[Optional]
+	string mt_instanceid
+}
+```
+```
+Response
+{
+	long callsSeed
+	bool lang
+	bool isVpn
+	string[] reg-country-code
+	int app-update-type
+	string location
+	string recovery-url
+}
+```
+
+### LOGIN2
+```
+Request
+{
+	string configHash
+	long contactsSync
+	bool needProfile
+}
+```
+```
+Response
+{
+	Configuration config
+	Profile profile
+	ContactInfo[] contacts
+}
+```
+
+### PROFILE
+```
+Request
+{
+	[Optional]
+	string firstName
+	[Optional]
+	string lastName
+	[Optional]
+	string photoToken
+	[Optional]
+	long photoId
+	[Optional]
+	RectF crop
+	[Optional]
+	string description
+	[Optional]
+	string link
+	[EnumAsString]
+	AvatarType avatarType
+}
+```
+```
+Response
+{
+	Profile profile
+}
+```
+
+### AUTH_REQUEST
+```
+Request
+{
+	string phone
+	[EnumAsString]
+	AuthType type
+	[Optional]
+	byte[] mode
+}
+```
+```
+Response
+{
+	int codeLength
+	long altActionDuration
+	int requestCountLeft
+	string token
+	long requestMaxDuration
+
+}
+```
+
+### AUTH
+```
+Request
+{
+	string token
+	[Optional]
+	string verifyCode
+	string authTokenType
+}
+```
+```
+Response
+{
+	Profile profile
+	Dictionary<string, TokenAttribute> tokenAttrs
+	NeuroAvatarsPresetInfo[] presetAvatars
+	PasswordChallenge passwordChallenge
+}
+```
+
+### LOGIN
+```
+Request
+{
+	string token
+	bool interactive
+	[Optional]
+	long chatsSync
+	[Optional]
+	long contactsSync
+	long presenceSync
+	[Optional]
+	string configHash
+	[Optional]
+	long callsSync
+	[Optional]
+	long lastLogin
+	[Optional]
+	long draftsSync
+	[Optional]
+	long bannersSync
+	[Optional]
+	byte[] chatCacheFingerprint
+	[Optional]
+	ExpObject exp
+}
+```
+```
+Response
+{
+	bool videoChatHistory
+	long chatMarker
+	Configuration config
+	DraftsNews drafts
+	Presence presence
+	ContactInfo[] contacts
+	Dictionary<long, Message[]> messages
+	Profile profile
+	int updates
+	long time
+	Call[] calls
+	Chats[] chats
+	string token
+	Login2Flags login2Flags
+	long resetAt
+}
+```
+
+### LOGOUT
+```
+Request
+{
+	string pushToken
+}
+```
+```
+Response { }
+```
+
+### SYNC
+```
+Request
+{
+	Dictionary<string, ContactNameWrapper> contactList
+}
+```
+```
+Response
+{
+	ContactInfo[] contacts
+	Dictionary<string, long> phones
+}
+```
+
+### CONFIG
+```
+Request
+{
+	[Optional]
+	string pushToken
+	[Optional]
+	long pushOptions
+	[Optional]
+	Configuration settings
+	[Optional]
+	bool reset
+}
+```
+```
+Response
+{
+	string hash
+	ConfigurationUserSettings user
+}
+```
+
+### AUTH_CONFIRM
+```
+Request
+{
+	string token
+	[EnumaAsString]
+	LoginTokenType tokenType
+	string firstName
+	[Optional]
+	string lastName
+	[Optional]
+	long photoId
+	[Optional, EnumAsString]
+	AvatarType avatarType
+}
+```
+```
+Response
+{
+	[EnumAsString]
+	LoginTokenType tokenType
+	string token
+	Profile profile
+}
+```
+
+### PRESET_AVATARS
+```
+Request { }
+```
+```
+Response
+{
+	NeuroAvatarsPresetInfo[] presetAvatars
+}
+```
+
+### ASSETS_GET
+```
+Request
+{
+	[Optional, EnumAsString]
+	AssetType type
+	[Optional]
+	string sectionId
+	long from
+	int count
+	[Optional]
+	string query
+}
+```
+```
+Response
+{
+	long marker
+	long[] stickers
+	long[] stickerSets
+	Background[] backgrounds
+}
+```
+
+### ASSETS_UPDATE
+```
+Request
+{
+	[Optional, EnumAsString]
+	AssetType type
+	long sync
+	[Optional]
+	long chatId
+	[Optional]
+	long userId
+}
+```
+```
+Response
+{
+	Dictionary<long, long> animojiUpdates
+	Dictionary<long, long> stickerSetsUpdates
+	long sync
+	Dictionary<long, long> stickersUpdates
+	Section[] sections
+	Dictionary<long, long> animojiSetUpdates
+	string[] stickersOrder
+}
+```
+
+### ASSETS_GET_BY_IDS
+```
+Request
+{
+	AssetType type
+	long[] ids
+}
+```
+```
+Response
+{
+	Animoji[] animoji
+	AnimojiSet[] animojiSets
+	Sticker[] stickers
+	StickerSet[] stickerSets
+}
+```
+
+### ASSETS_ADD
+```
+Request
+{
+	AssetType type
+	long[] ids
+}
+```
+```
+Response
+{
+	bool success
+	long updateTime
+}
+```
+
+### CONTACT_INFO
+```
+Request
+{
+	long[] contactIds
+	[Optional]
+	long chat_id
+}
+```
+```
+Response
+{
+	ContactInfo[] contacts
+}
+```
+
+### CONTACT_UPDATE
+```
+Request
+{
+	long contactIds
+	[Optional, EnumAsString]
+	ContactUpdateAction action
+	[Optional]
+	long firstName
+	[Optional]
+	long lastName
+}
+```
+```
+Response
+{
+	ContactInfo contact
+}
+```
+
+### CONTACT_PRESENCE
+```
+Request
+{
+	long[] contactIds
+	[Optional]
+	long sync
+}
+```
+```
+Response
+{
+	Presence presence
+	long time
+}
+```
+
+### CONTACT_LIST
+```
+Request
+{
+	[EnumAsString]
+	StatusType status
+	[Optional]
+	int from
+	[Optional]
+	int count
+}
+```
+```
+Response
+{
+	ContactInfo[] contacts
+}
+```
