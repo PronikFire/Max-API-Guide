@@ -173,27 +173,27 @@
 | 34 | [CONTACT_UPDATE](#contact_update) |
 | 35 | [CONTACT_PRESENCE](#contact_presence) |
 | 36 | [CONTACT_LIST](#contact_list) |
-| 37 | CONTACT_SEARCH |
-| 38 | CONTACT_MUTUAL |
-| 39 | CONTACT_PHOTOS |
+| 37 | [CONTACT_SEARCH](#contact_search) |
+| 38 | [CONTACT_MUTUAL](#contact_mutual) |
+| 39 | [CONTACT_PHOTOS](#contact_photos) |
 | 40 | CONTACT_SORT |
-| 42 | CONTACT_VERIFY |
-| 43 | REMOVE_CONTACT_PHOTO |
-| 46 | CONTACT_INFO_BY_PHONE |
-| 48 | CHAT_INFO |
-| 49 | CHAT_HISTORY |
-| 50 | CHAT_MARK |
-| 51 | CHAT_MEDIA |
-| 52 | CHAT_DELETE |
-| 53 | CHATS_LIST |
-| 54 | CHAT_CLEAR |
-| 55 | CHAT_UPDATE |
-| 56 | CHAT_CHECK_LINK |
-| 57 | CHAT_JOIN |
-| 58 | CHAT_LEAVE |
-| 59 | CHAT_MEMBERS |
-| 60 | PUBLIC_SEARCH |
-| 61 | CHAT_PERSONAL_CONFIG |
+| 42 | [CONTACT_VERIFY](#contact_verify) |
+| 43 | [REMOVE_CONTACT_PHOTO](#remove_contact_photo) |
+| 46 | [CONTACT_INFO_BY_PHONE](#contact_info_by_phone) |
+| 48 | [CHAT_INFO](#chat_info) |
+| 49 | [CHAT_HISTORY](#chat_history) |
+| 50 | [CHAT_MARK](#chat_mark) |
+| 51 | [CHAT_MEDIA](#chat_media) |
+| 52 | [CHAT_DELETE](#chat_delete) |
+| 53 | [CHATS_LIST](#chats_list) |
+| 54 | [CHAT_CLEAR](#chat_clear) |
+| 55 | [CHAT_UPDATE](#chat_update) |
+| 56 | [CHAT_CHECK_LINK](#chat_check_link) |
+| 57 | [CHAT_JOIN](#chat_join) |
+| 58 | [CHAT_LEAVE](#chat_leave) |
+| 59 | [CHAT_MEMBERS](#chat_members) |
+| 60 | [PUBLIC_SEARCH](#public_search) |
+| 61 | [CHAT_PERSONAL_CONFIG](#chat_personal_config) |
 | 62 | CHAT_LIVESTREAM_INFO |
 | 63 | CHAT_CREATE |
 | 64 | MSG_SEND |
@@ -331,7 +331,8 @@
 Здесь описаны структуры сообщений запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем что будут в сообщениях, т.е. их можно использовать для парсинга.
 
 > [!IMPORTANT]
-> `Optional` не значит что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.
+> `Optional` не значит что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.\
+> `EnumAsString` значит что поле представляет из себя String, но может содержать ограниченное количество значений, которые можно представить в виде Enum.
 
 ### PING
 ```
@@ -528,7 +529,7 @@ Response
 	long chatMarker
 	Configuration config
 	DraftsNews drafts
-	Presence presence
+	Dictionary<long, Presence> presence
 	ContactInfo[] contacts
 	Dictionary<long, Message[]> messages
 	Profile profile
@@ -595,7 +596,7 @@ Response
 Request
 {
 	string token
-	[EnumaAsString]
+	[EnumAsString]
 	LoginTokenType tokenType
 	string firstName
 	[Optional]
@@ -759,7 +760,7 @@ Request
 ```
 Response
 {
-	Presence presence
+	Dictionary<long, Presence> presence
 	long time
 }
 ```
@@ -780,5 +781,360 @@ Request
 Response
 {
 	ContactInfo[] contacts
+}
+```
+
+### CONTACT_SEARCH
+```
+Request { }
+```
+```
+Response
+{
+	ContactSearchResult[] result
+	int total
+}
+```
+
+### CONTACT_MUTUAL
+```
+Request { }
+```
+```
+Response
+{
+	long[] contactIds
+}
+```
+
+### CONTACT_PHOTOS
+```
+Request
+{
+	long contactId
+	[Optional]
+	int count
+	[Optional]
+	int from
+}
+```
+```
+Response
+{
+	long[] ids
+	string[] urls
+	int total
+}
+```
+
+### CONTACT_VERIFY
+```
+Request { }
+```
+```
+Response
+{
+	[EnumAsString]
+	VerifyResultType verifyResult
+	string name
+}
+```
+
+### REMOVE_CONTACT_PHOTO
+```
+Request
+{
+	long photoId
+}
+```
+```
+Response
+{
+	Profile profile
+}
+```
+
+### CONTACT_INFO_BY_PHONE
+```
+Request
+{
+	string phone
+}
+```
+```
+Response
+{
+	ContactInfo contact
+}
+```
+
+### CHAT_INFO
+```
+Request
+{
+	long[] chatIds
+}
+```
+```
+Response
+{
+	Chat chat
+	ContactInfo user
+	Chat[] chats
+}
+```
+
+### CHAT_HISTORY
+```
+Request
+{
+	long chatId
+	[Optional]
+	long postId
+	long from
+	int forward
+	long forwardTime
+	int backward
+	long backwardTime
+	bool getChat
+	bool getMessages
+	[Optional]
+	string chatAccessToken
+	string itemType
+	bool interactive
+}
+```
+```
+Response
+{
+	Chat chat
+	Message[] messages
+	long[] messageIds
+}
+```
+
+### CHAT_MARK
+```
+Request
+{
+	long chatId
+	long mark
+	[Optional]
+	long messageId
+	[EnumAsString]
+	MarkType type
+}
+```
+```
+Response
+{
+	long mark
+	int unread
+	bool success
+}
+```
+
+### CHAT_MEDIA
+```
+Request
+{
+	long chatId
+	[Optional]
+	long messageId
+	[Optional, EnumAsString]
+	AttachType[] attachTypes
+	[Optional]
+	int forward
+	[Optional]
+	int backward
+}
+```
+```
+Response
+{
+	long forward
+	Message[] messages
+	int pos
+	int total
+	long backward
+}
+```
+
+### CHAT_DELETE
+```
+Request
+{
+	long chatId
+	long lastEventTime
+	bool forAll
+}
+```
+```
+Response { }
+```
+
+### CHATS_LIST
+```
+Request
+{
+	long marker
+	int count
+}
+```
+```
+Response 
+{
+	long marker
+	Chat[] chats
+}
+```
+
+### CHAT_CLEAR
+```
+Request
+{
+	long chatId
+	long lastEventTime
+	bool forAll
+}
+```
+```
+Response { }
+```
+
+### CHAT_UPDATE
+```
+Request
+{
+	long chatId
+	[Optional, EnumAsString]
+	AccessType access
+	[Optional]
+	string link
+	[Optional]
+	bool revokePrivateLink
+	[Optional]
+	bool removeLink
+	[Optional]
+	string description
+	[Optional]	
+	Dictionary<string, bool> options
+	[Optional]
+	string theme
+	[Optional]
+	string photoToken
+	[Optional]
+	RectF crop
+	[Optional]
+	long pinMessageId
+	[Optional]
+	bool notifyPin
+	[Optional]
+	long changeOwnerId
+}
+```
+```
+Response 
+{
+	Chat chat
+}
+```
+
+### CHAT_CHECK_LINK
+```
+Request
+{
+	string link
+	[EnumAsString]
+	LinkType linkType
+}
+```
+```
+Response { }
+```
+
+### CHAT_JOIN
+```
+Request
+{
+	string chatAccessToken
+	string link
+}
+```
+```
+Response 
+{
+	Chat chat
+}
+```
+
+### CHAT_LEAVE
+```
+Request
+{
+	long chatId
+}
+```
+```
+Response { }
+```
+
+### CHAT_MEMBERS
+```
+Request
+{
+	long chatId
+	[Optional, EnumAsString]
+	MemberType type
+	[Optional]
+	long marker
+	[Optional]
+	int count
+	[Optional]
+	string query
+}
+```
+```
+Response
+{
+	Member[] members
+	long marker
+}
+```
+
+### PUBLIC_SEARCH
+```
+Request
+{
+	string query
+	int count
+	[Optional]
+	long marker
+	[Optional]
+	SearchType type
+}
+```
+```
+Response
+{
+	long marker
+	SearchResult[] result
+	string ucpQId
+	int total
+}
+```
+
+### CHAT_PERSONAL_CONFIG
+```
+Request
+{
+	long chatId
+	bool hideNonContactBar
+}
+```
+```
+Response
+{
+	Chat chat
 }
 ```
