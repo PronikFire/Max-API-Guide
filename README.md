@@ -1,7 +1,5 @@
 # Гайд на API MAX
 
-### Пример можно посмотреть [здесь](https://github.com/PronikFire/Client-Max-Api)
-
 ### Нашли ошибку или хотите задать вопрос? Создайте *Issue*
 
 ## Общая информация
@@ -123,9 +121,9 @@
 
 | Значение | Описание |
 | --- | --- |
-| 0 | Request - запрос |
-| 1 | Response - ответ |
-| 3 | Error - ошибка |
+| 0 | Request |
+| 1 | Response |
+| 3 | Error |
 
 ---
 
@@ -133,8 +131,9 @@
 
 Байт `cof` отвечает за коэффициент сжатия.
 
-> [!NOTE]
-> Формула расчета: $\lfloor \text{исходная длина} / \text{длина при сжатии} \rfloor + 1$ (округляется до целого).
+
+Формула расчета: $\lfloor \text{исходная длина} / \text{длина при сжатии} \rfloor + 1$ (округляется до целого).
+
 
 Сжатие применяется только в том случае, если длина payload превышает 32 байта.
 
@@ -142,10 +141,10 @@
 
 ## Список `opcode`
 
-Здесь собраны все возможные opcode. 
+Здесь собраны все возможные opcode. \
+Актуально для Android-приложения версии `26.23.1` и версии протокола: `10`.
+Знак `~` означает, что opcode не подтвержден исходниками выбранной версии приложения.
 
-> [!IMPORTANT]
-> База была собрана из Android-приложения версии `26.19.2`. Версия протокола: `10`.
 
 | Opcode | Описание |
 | --- | --- |
@@ -174,7 +173,7 @@
 | 35 | [CONTACT_PRESENCE](#contact_presence) |
 | 36 | [CONTACT_LIST](#contact_list) |
 | 37 | [CONTACT_SEARCH](#contact_search) |
-| 38 | [CONTACT_MUTUAL](#contact_mutual) |
+| 38 | [CONTACT_MUTUAL](#contact_mutual) ~ |
 | 39 | [CONTACT_PHOTOS](#contact_photos) |
 | 40 | CONTACT_SORT |
 | 42 | [CONTACT_VERIFY](#contact_verify) |
@@ -195,7 +194,7 @@
 | 60 | [PUBLIC_SEARCH](#public_search) |
 | 61 | [CHAT_PERSONAL_CONFIG](#chat_personal_config) |
 | 62 | CHAT_LIVESTREAM_INFO |
-| 63 | CHAT_CREATE |
+| 63 | CHAT_CREATE ~ |
 | 64 | MSG_SEND |
 | 65 | MSG_TYPING |
 | 66 | MSG_DELETE |
@@ -222,6 +221,7 @@
 | 89 | LINK_INFO |
 | 91 | GET_COMMENTS_UPDATES |
 | 92 | MSG_DELETE_RANGE |
+| 94 | MSG_DELETE_USER |
 | 96 | SESSIONS_INFO |
 | 97 | SESSIONS_CLOSE |
 | 98 | PHONE_BIND_REQUEST |
@@ -265,8 +265,8 @@
 | 147 | NOTIF_LOCATION |
 | 148 | NOTIF_LOCATION_REQUEST |
 | 150 | NOTIF_ASSETS_UPDATE |
-| 152 | NOTIF_DRAFT |
-| 153 | NOTIF_DRAFT_DISCARD |
+| 152 | NOTIF_DRAFT ~ |
+| 153 | NOTIF_DRAFT_DISCARD ~ |
 | 154 | NOTIF_MSG_DELAYED |
 | 155 | NOTIF_MSG_REACTIONS_CHANGED |
 | 156 | NOTIF_MSG_YOU_REACTED |
@@ -279,8 +279,8 @@
 | 164 | CALL_HISTORY_CLEAR |
 | 165 | NOTIF_CALL_HISTORY |
 | 166 | VIDEO_CHAT_JOIN |
-| 176 | DRAFT_SAVE |
-| 177 | DRAFT_DISCARD |
+| 176 | DRAFT_SAVE ~ |
+| 177 | DRAFT_DISCARD ~ |
 | 178 | MSG_REACTION |
 | 179 | MSG_CANCEL_REACTION |
 | 180 | MSG_GET_REACTIONS |
@@ -305,6 +305,8 @@
 | 216 | NOTIF_STORIES_UPDATE |
 | 217 | STORIES_EDIT |
 | 218 | STORIES_DELETE |
+| 220 | STORIES_GET_BY_STORY_ID |
+| 256 | ORG_INFO |
 | 257 | CHAT_REACTIONS_SETTINGS_SET |
 | 258 | REACTIONS_SETTINGS_GET_BY_CHAT_ID |
 | 259 | ASSETS_REMOVE |
@@ -321,18 +323,38 @@
 | 293 | NOTIF_TRANSCRIPTION |
 | 300 | CHAT_SUGGEST |
 | 301 | AUDIO_PLAY |
+| 302 | BANNERS_GET |
+| 303 | MSG_DELIVERY |
 | 304 | SEND_VOTE |
+| 305 | VOTERS_LIST_BY_ANSWER |
 | 306 | GET_POLL_UPDATES |
+| 307 | CHAT_CHECK_ESIA |
 
 ---
 
-## Структуры сообщений
+## Структура сообщения ошибки
+```
+Error
+{
+	string description
+	string error
+	string title
+	string message
+	string localizedMessage
+}
+```
+`title` и `description` не гарантированы.
 
-Здесь описаны структуры сообщений запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем что будут в сообщениях, т.е. их можно использовать для парсинга.
+---
 
-> [!IMPORTANT]
-> `Optional` не значит что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.\
-> `EnumAsString` значит что поле представляет из себя String, но может содержать ограниченное количество значений, которые можно представить в виде Enum.
+
+## Структуры запросов и ответов
+
+Здесь описаны структуры сообщений запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем, что будут в сообщениях, т.е. их можно использовать для парсинга.
+
+
+`Optional` не значит, что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.\
+`EnumAsString` значит, что поле представляет из себя String, но может содержать ограниченное количество значений, которые можно представить в виде Enum.
 
 ### PING
 ```
@@ -519,6 +541,7 @@ Request
 	[Optional]
 	byte[] chatCacheFingerprint
 	[Optional]
+	byte[] chatsCountGroups
 	ExpObject exp
 }
 ```
@@ -732,7 +755,7 @@ Response
 ```
 Request
 {
-	long contactIds
+	long contactId
 	[Optional, EnumAsString]
 	ContactUpdateAction action
 	[Optional]
@@ -786,7 +809,9 @@ Response
 
 ### CONTACT_SEARCH
 ```
-Request { }
+Request
+{
+}
 ```
 ```
 Response
@@ -798,7 +823,9 @@ Response
 
 ### CONTACT_MUTUAL
 ```
-Request { }
+Request
+{
+}
 ```
 ```
 Response
