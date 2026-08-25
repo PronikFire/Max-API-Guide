@@ -2,20 +2,23 @@
 
 ### Нашли ошибку или хотите задать вопрос? Создайте *Issue*
 
-## Общая информация
+Здесь рассказано про динамический анализ пакетов, но это не единственный вариант. Вы можете использовать **jadx** на мобильной версии, чтобы проводить статический анализ. Он даст больше понимания.
+
+
+Также здесь собраны базовые данные, которые можно использовать для дальнейшего анализа или создания своих проектов.
+
+---
+
+## Анализ пакетов
 
 У Max существует два API:
 
-* **WSS (WebSocket)** - для web-версии
+* **WSS** - для web-версии
 * **TLS** - для приложений
 
 По факту это один и тот же API, но разница между ними все же есть. Как пример: в web-версии вырезали аутентификацию по номеру телефона.
 
----
-
-## Как анализировать Web API
-
-Анализ можно проводить прямо в браузере с помощью панели разработчика:
+## Web API
 
 1. Заходим на сайт: [web.max.ru](https://web.max.ru)
 2. Открываем панель разработчика:
@@ -32,13 +35,9 @@
 
 7. Переходим во вкладку **Messages** (Сообщения)
 
-После выбора сообщения в левом нижнем углу можно изменить режим отображения **View** (по умолчанию там выставлено UTF-8).
+После выбора сообщения в левом нижнем углу можно изменить режим отображения **View** (по умолчанию там выставлен UTF-8).
 
-Про содержание сообщений подробнее написано [здесь](#содержание-сообщений).
-
----
-
-## Как анализировать App API
+## App API
 
 Здесь не обойтись без стороннего софта.
 
@@ -59,8 +58,6 @@
 * Путь к файлу: `C:\Users\%User%\.mitmproxy\mitmproxy-ca-cert.cer`
 * Устанавливать для: **Локального компьютера**
 * Хранилище: **Доверенные корневые центры сертификации**
-
-
 
 ### Настройка mitmproxy
 
@@ -88,11 +85,13 @@
 * **Hex Dump**
 * **Hex Stream** - то же самое, но в одну строку
 
-Содержание сообщений смотрите далее.
-
 ---
 
 ## Содержание сообщений
+
+Для побайтового анализа пакетов можно использовать:
+* [hexed.it](https://hexed.it) - отличный онлайн-инструмент для работы с бинарными данными.
+* [HxD](https://mh-nexus.de/en/hxd/) - полноценный офлайн-аналог.
 
 Заголовок составляет 10 байт.
 
@@ -100,20 +99,11 @@
 | --- | --- |
 | 1 | `ver` - версия протокола |
 | 2 | `cmd` - команда (см. [значения cmd](#значения-cmd)) |
-| 3..4 | `seq` - порядковый номер операции. |
+| 3..4 | `seq` - порядковый номер операции |
 | 5..6 | `opcode` - код операции (см. [список opcode](#список-opcode)) |
-| 7 | `cof` - степень сжатия LZ4 (`0` - сжатие не используется) |
+| 7 | `cof` - коэффициент сжатия (см. [сжатие](#сжатие))|
 | 8..10 | Длина payload в байтах |
-| 11.. | `Payload` - содержание сообщения (кодируется в формате **MsgPack**) |
-
-### Советы по анализу сообщений
-
-Для анализа **Hex Stream** удобно использовать:
-
-* [hexed.it](https://hexed.it) - отличный онлайн-инструмент для работы с бинарными данными.
-* [HxD](https://mh-nexus.de/en/hxd/) - полноценный офлайн-аналог.
-
-Также советую декомпилировать мобильную версию приложения с помощью **jadx**. Это даст гораздо больше понимания внутренних процессов.
+| 11.. | `payload` - содержание сообщения (кодируется в формате **MsgPack**) |
 
 ---
 
@@ -129,22 +119,23 @@
 
 ## Сжатие
 
-Байт `cof` отвечает за коэффициент сжатия.
+Байт `cof` отображает коэффициент сжатия `payload`. Если `cof` равен 0, то сжатие не используется. Для сжатия используется LZ4.
 
 
 Формула расчета: $\lfloor \text{исходная длина} / \text{длина при сжатии} \rfloor + 1$ (округляется до целого).
 
 
-Сжатие применяется только в том случае, если длина payload превышает 32 байта.
+Сжатие применяется только в том случае, если длина `payload` превышает 32 байта.
 
 ---
 
 ## Список `opcode`
 
-Здесь собраны все возможные opcode. \
+Здесь собраны все возможные opcode.
+
+
 Актуально для Android-приложения версии `26.28.0` и версии протокола: `10`.
 Знак `~` означает, что opcode не подтвержден исходниками выбранной версии приложения.
-
 
 | Opcode | Описание |
 | --- | --- |
@@ -172,39 +163,39 @@
 | 34 | [CONTACT_UPDATE](#contact_update) |
 | 35 | [CONTACT_PRESENCE](#contact_presence) |
 | 36 | [CONTACT_LIST](#contact_list) |
-| 37 | [CONTACT_SEARCH](#contact_search) |
-| 38 | [CONTACT_MUTUAL](#contact_mutual) ~ |
+| 37 | CONTACT_SEARCH |
+| 38 | CONTACT_MUTUAL |
 | 39 | [CONTACT_PHOTOS](#contact_photos) |
 | 40 | CONTACT_SORT |
-| 42 | [CONTACT_VERIFY](#contact_verify) |
+| 42 | CONTACT_VERIFY |
 | 43 | [REMOVE_CONTACT_PHOTO](#remove_contact_photo) |
 | 46 | [CONTACT_INFO_BY_PHONE](#contact_info_by_phone) |
 | 48 | [CHAT_INFO](#chat_info) |
 | 49 | [CHAT_HISTORY](#chat_history) |
 | 50 | [CHAT_MARK](#chat_mark) |
 | 51 | [CHAT_MEDIA](#chat_media) |
-| 52 | [CHAT_DELETE](#chat_delete) |
+| 52 | CHAT_DELETE |
 | 53 | [CHATS_LIST](#chats_list) |
-| 54 | [CHAT_CLEAR](#chat_clear) |
+| 54 | CHAT_CLEAR |
 | 55 | [CHAT_UPDATE](#chat_update) |
-| 56 | [CHAT_CHECK_LINK](#chat_check_link) |
+| 56 | CHAT_CHECK_LINK |
 | 57 | [CHAT_JOIN](#chat_join) |
-| 58 | [CHAT_LEAVE](#chat_leave) |
+| 58 | CHAT_LEAVE |
 | 59 | [CHAT_MEMBERS](#chat_members) |
-| 60 | [PUBLIC_SEARCH](#public_search) |
+| 60 | PUBLIC_SEARCH |
 | 61 | [CHAT_PERSONAL_CONFIG](#chat_personal_config) |
-| 62 | CHAT_LIVESTREAM_INFO |
+| 62 | [CHAT_LIVESTREAM_INFO](#chat_livestream_info) |
 | 63 | CHAT_CREATE ~ |
-| 64 | MSG_SEND |
+| 64 | [MSG_SEND](#msg_send) |
 | 65 | MSG_TYPING |
-| 66 | MSG_DELETE |
-| 67 | MSG_EDIT |
+| 66 | [MSG_DELETE](#msg_delete) |
+| 67 | [MSG_EDIT](#msg_edit) |
 | 68 | CHAT_SEARCH |
-| 70 | MSG_SHARE_PREVIEW |
-| 71 | MSG_GET |
+| 70 | [MSG_SHARE_PREVIEW](#msg_share_preview) |
+| 71 | [MSG_GET](#msg_get) |
 | 72 | MSG_SEARCH_TOUCH |
-| 73 | MSG_SEARCH |
-| 74 | MSG_GET_STAT |
+| 73 | [MSG_SEARCH](#msg_search) |
+| 74 | [MSG_GET_STAT](#msg_get_stat) |
 | 75 | CHAT_SUBSCRIBE |
 | 76 | VIDEO_CHAT_START |
 | 77 | CHAT_MEMBERS_UPDATE |
@@ -279,10 +270,11 @@
 | 164 | CALL_HISTORY_CLEAR |
 | 165 | NOTIF_CALL_HISTORY |
 | 166 | VIDEO_CHAT_JOIN |
+| 167 | VIDEO_CHAT_HANGUP |
 | 176 | DRAFT_SAVE ~ |
 | 177 | DRAFT_DISCARD ~ |
-| 178 | MSG_REACTION |
-| 179 | MSG_CANCEL_REACTION |
+| 178 | [MSG_REACTION](#msg_reaction) |
+| 179 | [MSG_CANCEL_REACTION](#msg_cancel_reaction) |
 | 180 | MSG_GET_REACTIONS |
 | 181 | MSG_GET_DETAILED_REACTIONS |
 | 193 | STICKER_CREATE |
@@ -294,7 +286,7 @@
 | 200 | PROFILE_DELETE_TIME |
 | 202 | TRANSCRIBE_MEDIA |
 | 203 | PHOTO_URL_REFRESH |
-| 208 | STORIES_LIST |
+| 208 | [STORIES_LIST](#stories_list) |
 | 209 | STORIES_LIST_BY_OWNER_ID |
 | 210 | STORIES_GET_BY_OWNER_ID |
 | 211 | STORIES_GET_STATS |
@@ -306,7 +298,7 @@
 | 217 | STORIES_EDIT |
 | 218 | STORIES_DELETE |
 | 220 | STORIES_GET_BY_STORY_ID |
-| 256 | ORG_INFO |
+| 256 | [ORG_INFO](#org_info) |
 | 257 | CHAT_REACTIONS_SETTINGS_SET |
 | 258 | REACTIONS_SETTINGS_GET_BY_CHAT_ID |
 | 259 | ASSETS_REMOVE |
@@ -316,7 +308,7 @@
 | 273 | FOLDERS_GET_BY_ID |
 | 274 | FOLDERS_UPDATE |
 | 275 | FOLDERS_REORDER |
-| 276 | FOLDERS_DELETE |
+| 276 | [FOLDERS_DELETE](#folders_delete) |
 | 277 | NOTIF_FOLDERS |
 | 290 | AUTH_QR_APPROVE |
 | 292 | NOTIF_BANNERS |
@@ -332,7 +324,8 @@
 
 ---
 
-## Структура сообщения ошибки
+## Структура Error
+
 ```
 Error
 {
@@ -348,13 +341,12 @@ Error
 ---
 
 
-## Структуры запросов и ответов
+## Структуры Request и Response
 
-Здесь описаны структуры сообщений запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем, что будут в сообщениях, т.е. их можно использовать для парсинга.
+Здесь описаны структуры запросов и ответов под каждый opcode. Названия полей полностью соответствуют тем, что будут в сообщениях, т.е. их можно использовать для парсинга.
 
 
-`Optional` не значит, что поле можно полностью игнорировать. Оно может быть обязательным при определённых условиях.\
-`EnumAsString` значит, что поле представляет из себя String, но может содержать ограниченное количество значений, которые можно представить в виде Enum.
+`EnumAsString` значит, что поле представляет собой String, но может содержать ограниченное количество значений, которые можно представить в виде Enum.
 
 ### PING
 ```
@@ -410,7 +402,6 @@ Request
 	UserAgent userAgent
 	string deviceId
 	long clientSessionId
-	[Optional]
 	string mt_instanceid
 }
 ```
@@ -448,19 +439,12 @@ Response
 ```
 Request
 {
-	[Optional]
 	string firstName
-	[Optional]
 	string lastName
-	[Optional]
 	string photoToken
-	[Optional]
 	long photoId
-	[Optional]
 	RectF crop
-	[Optional]
 	string description
-	[Optional]
 	string link
 	[EnumAsString]
 	AvatarType avatarType
@@ -480,7 +464,6 @@ Request
 	string phone
 	[EnumAsString]
 	AuthType type
-	[Optional]
 	byte[] mode
 }
 ```
@@ -501,8 +484,8 @@ Response
 Request
 {
 	string token
-	[Optional]
 	string verifyCode
+	[EnumAsString]
 	string authTokenType
 }
 ```
@@ -522,24 +505,15 @@ Request
 {
 	string token
 	bool interactive
-	[Optional]
 	long chatsSync
-	[Optional]
 	long contactsSync
 	long presenceSync
-	[Optional]
 	string configHash
-	[Optional]
 	long callsSync
-	[Optional]
 	long lastLogin
-	[Optional]
 	long draftsSync
-	[Optional]
 	long bannersSync
-	[Optional]
 	byte[] chatCacheFingerprint
-	[Optional]
 	byte[] chatsCountGroups
 	ExpObject exp
 }
@@ -595,13 +569,9 @@ Response
 ```
 Request
 {
-	[Optional]
 	string pushToken
-	[Optional]
 	long pushOptions
-	[Optional]
 	Configuration settings
-	[Optional]
 	bool reset
 }
 ```
@@ -621,11 +591,9 @@ Request
 	[EnumAsString]
 	LoginTokenType tokenType
 	string firstName
-	[Optional]
 	string lastName
-	[Optional]
 	long photoId
-	[Optional, EnumAsString]
+	[EnumAsString]
 	AvatarType avatarType
 }
 ```
@@ -654,13 +622,11 @@ Response
 ```
 Request
 {
-	[Optional, EnumAsString]
+	[EnumAsString]
 	AssetType type
-	[Optional]
 	string sectionId
 	long from
 	int count
-	[Optional]
 	string query
 }
 ```
@@ -678,12 +644,10 @@ Response
 ```
 Request
 {
-	[Optional, EnumAsString]
+	[EnumAsString]
 	AssetType type
 	long sync
-	[Optional]
 	long chatId
-	[Optional]
 	long userId
 }
 ```
@@ -722,8 +686,9 @@ Response
 ```
 Request
 {
+	[EnumAsString]
 	AssetType type
-	long[] ids
+	long id
 }
 ```
 ```
@@ -739,7 +704,6 @@ Response
 Request
 {
 	long[] contactIds
-	[Optional]
 	long chat_id
 }
 ```
@@ -755,12 +719,10 @@ Response
 Request
 {
 	long contactId
-	[Optional, EnumAsString]
+	[EnumAsString]
 	ContactUpdateAction action
-	[Optional]
-	long firstName
-	[Optional]
-	long lastName
+	string firstName
+	string lastName
 }
 ```
 ```
@@ -775,8 +737,6 @@ Response
 Request
 {
 	long[] contactIds
-	[Optional]
-	long sync
 }
 ```
 ```
@@ -793,9 +753,7 @@ Request
 {
 	[EnumAsString]
 	StatusType status
-	[Optional]
 	int from
-	[Optional]
 	int count
 }
 ```
@@ -806,41 +764,12 @@ Response
 }
 ```
 
-### CONTACT_SEARCH
-```
-Request
-{
-}
-```
-```
-Response
-{
-	ContactSearchResult[] result
-	int total
-}
-```
-
-### CONTACT_MUTUAL
-```
-Request
-{
-}
-```
-```
-Response
-{
-	long[] contactIds
-}
-```
-
 ### CONTACT_PHOTOS
 ```
 Request
 {
 	long contactId
-	[Optional]
 	int count
-	[Optional]
 	int from
 }
 ```
@@ -850,19 +779,6 @@ Response
 	long[] ids
 	string[] urls
 	int total
-}
-```
-
-### CONTACT_VERIFY
-```
-Request { }
-```
-```
-Response
-{
-	[EnumAsString]
-	VerifyResultType verifyResult
-	string name
 }
 ```
 
@@ -915,7 +831,6 @@ Response
 Request
 {
 	long chatId
-	[Optional]
 	long postId
 	long from
 	int forward
@@ -924,9 +839,9 @@ Request
 	long backwardTime
 	bool getChat
 	bool getMessages
-	[Optional]
 	string chatAccessToken
-	string itemType
+	[EnumAsString]
+	ItemType itemType
 	bool interactive
 }
 ```
@@ -945,7 +860,6 @@ Request
 {
 	long chatId
 	long mark
-	[Optional]
 	long messageId
 	[EnumAsString]
 	MarkType type
@@ -965,13 +879,10 @@ Response
 Request
 {
 	long chatId
-	[Optional]
 	long messageId
-	[Optional, EnumAsString]
+	[EnumAsString]
 	AttachType[] attachTypes
-	[Optional]
 	int forward
-	[Optional]
 	int backward
 }
 ```
@@ -984,19 +895,6 @@ Response
 	int total
 	long backward
 }
-```
-
-### CHAT_DELETE
-```
-Request
-{
-	long chatId
-	long lastEventTime
-	bool forAll
-}
-```
-```
-Response { }
 ```
 
 ### CHATS_LIST
@@ -1015,47 +913,23 @@ Response
 }
 ```
 
-### CHAT_CLEAR
-```
-Request
-{
-	long chatId
-	long lastEventTime
-	bool forAll
-}
-```
-```
-Response { }
-```
-
 ### CHAT_UPDATE
 ```
 Request
 {
 	long chatId
-	[Optional, EnumAsString]
+	[EnumAsString]
 	AccessType access
-	[Optional]
 	string link
-	[Optional]
 	bool revokePrivateLink
-	[Optional]
 	bool removeLink
-	[Optional]
 	string description
-	[Optional]	
 	Dictionary<string, bool> options
-	[Optional]
 	string theme
-	[Optional]
 	string photoToken
-	[Optional]
 	RectF crop
-	[Optional]
 	long pinMessageId
-	[Optional]
 	bool notifyPin
-	[Optional]
 	long changeOwnerId
 }
 ```
@@ -1066,24 +940,10 @@ Response
 }
 ```
 
-### CHAT_CHECK_LINK
-```
-Request
-{
-	string link
-	[EnumAsString]
-	LinkType linkType
-}
-```
-```
-Response { }
-```
-
 ### CHAT_JOIN
 ```
 Request
 {
-	string chatAccessToken
 	string link
 }
 ```
@@ -1094,29 +954,15 @@ Response
 }
 ```
 
-### CHAT_LEAVE
-```
-Request
-{
-	long chatId
-}
-```
-```
-Response { }
-```
-
 ### CHAT_MEMBERS
 ```
 Request
 {
 	long chatId
-	[Optional, EnumAsString]
+	[EnumAsString]
 	MemberType type
-	[Optional]
 	long marker
-	[Optional]
 	int count
-	[Optional]
 	string query
 }
 ```
@@ -1125,28 +971,6 @@ Response
 {
 	Member[] members
 	long marker
-}
-```
-
-### PUBLIC_SEARCH
-```
-Request
-{
-	string query
-	int count
-	[Optional]
-	long marker
-	[Optional]
-	SearchType type
-}
-```
-```
-Response
-{
-	long marker
-	SearchResult[] result
-	string ucpQId
-	int total
 }
 ```
 
@@ -1162,5 +986,226 @@ Request
 Response
 {
 	Chat chat
+}
+```
+
+### CHAT_LIVESTREAM_INFO
+```
+Request
+{
+	long[] chatIds
+}
+```
+```
+Response
+{
+	LiveStream[] liveStreams
+}
+```
+
+### MSG_SEND
+```
+Request
+{
+	long chatId
+	long postId
+	long userId
+	OutgoingMessage message
+	bool notify
+}
+```
+```
+Response
+{
+	long chatId
+	long postId
+	int unread
+	Chat chat
+	long mark
+	Message message
+}
+```
+
+### MSG_DELETE
+```
+Request
+{
+	long chatId
+	long[] messageIds
+	[EnumAsString]
+	Complaint complaint
+	bool forMe
+	ItemType itemType
+	long postId
+}
+```
+```
+Response
+{
+	long chatId
+	long postId
+	long[] messageIds
+}
+```
+
+### MSG_EDIT
+```
+Request
+{
+	long chatId
+	long postId
+	long messageId
+	string text
+	Attach[] attachments
+	MessageElement[] elements
+	DelayedAttributes delayedAttributes
+}
+```
+```
+Response
+{
+	Message message
+}
+```
+
+### MSG_SHARE_PREVIEW
+```
+Request
+{
+	string text
+}
+```
+```
+Response
+{
+	Attach[] attachments
+}
+```
+
+### MSG_GET
+```
+Request
+{
+	long chatId
+	long[] messageIds
+}
+```
+```
+Response
+{
+	long chatId
+	Message[] messages
+}
+```
+
+### MSG_SEARCH
+```
+Request
+{
+	long chatId
+	string query
+	int count
+	long marker
+}
+```
+```
+Response
+{
+	long marker
+	MsgSearchResult[] result
+	string ucpQId
+	int total
+}
+```
+
+### MSG_GET_STAT
+```
+Request
+{
+	long chatId
+	long[] messageIds
+}
+```
+```
+Response
+{
+	Dictionary<long, Stat> stats
+}
+```
+
+### MSG_REACTION
+```
+Request
+{
+	long chatId
+	long postId
+	long messageId
+	Reaction reaction
+}
+```
+```
+Response
+{
+	MsgReactInfo reactionInfo
+}
+```
+
+### MSG_CANCEL_REACTION
+```
+Request
+{
+	long chatId
+	long postId
+	long messageId
+}
+```
+```
+Response
+{
+	MsgReactInfo reactionInfo
+}
+```
+
+### STORIES_LIST
+```
+Request
+{
+	string cursor
+	int count
+}
+```
+```
+Response
+{
+	string cursor
+	StoriesPreviewApi[] storiesPreviews
+}
+```
+
+### ORG_INFO
+```
+Request
+{
+	long[] organizationIds
+}
+```
+```
+Response
+{
+	Organization[] organizations
+}
+```
+
+### FOLDERS_DELETE
+```
+Request
+{
+	long[] folderIds
+}
+```
+```
+Response
+{
+	long folderSync
 }
 ```
